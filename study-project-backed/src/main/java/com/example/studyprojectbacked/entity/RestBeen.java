@@ -9,6 +9,10 @@ public record RestBeen<T> (int code, T data, String message) {
         return new RestBeen<>(200,data,"请求成功");
     }
 
+    public static <T> RestBeen<T> success(){
+        return success(null);
+    }
+
     public static <T> RestBeen<T> failure(int code, String message){
         return new RestBeen<>(code,null,message);
     }
