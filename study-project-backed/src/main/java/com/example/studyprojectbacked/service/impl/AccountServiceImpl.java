@@ -2,6 +2,7 @@ package com.example.studyprojectbacked.service.impl;
 
 import com.example.studyprojectbacked.entity.dto.Account;
 import com.example.studyprojectbacked.mapper.UserMapper;
+import com.example.studyprojectbacked.service.AccountService;
 import jakarta.annotation.Resource;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,7 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AuthorizeService implements UserDetailsService {
+public class AccountServiceImpl implements AccountService {
 
     @Resource
     UserMapper userMapper;
@@ -24,5 +25,10 @@ public class AuthorizeService implements UserDetailsService {
                 .password(account.getPassword())
                 .roles(account.getRole())
                 .build();
+    }
+
+    @Override
+    public String registerEmailVerifyCode(String type, String email, String ip) {
+        return null;
     }
 }

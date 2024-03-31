@@ -6,9 +6,11 @@ import com.example.studyprojectbacked.entity.vo.response.AuthorizeVO;
 import com.example.studyprojectbacked.filter.JwtAuthorizeFilter;
 import com.example.studyprojectbacked.mapper.UserMapper;
 import com.example.studyprojectbacked.util.JwtUtil;
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -63,17 +65,6 @@ public class SecurtiyConfiguration {
                     conf.authenticationEntryPoint(this::handleProcess);
                     conf.accessDeniedHandler(this::handleProcess);
                 })
-                .cors(conf -> {
-                    CorsConfiguration cors = new CorsConfiguration();
-                    cors.addAllowedOrigin("http://localhost:5173");
-                    cors.setAllowCredentials(false);
-                    cors.addExposedHeader("*");
-                    cors.addAllowedMethod("*");
-                    cors.addExposedHeader("*");
-                    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                    source.registerCorsConfiguration("/**", cors);
-                    conf.configurationSource(source);
-                })
                 .sessionManagement(conf -> {
                     conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
@@ -95,11 +86,10 @@ public class SecurtiyConfiguration {
             User user = (User) authentication.getPrincipal();
             Account account = userMapper.getAccountByUsernameOrEmail(user.getUsername());
             String token = jwtUtil.createJwt(user,account.getId(),account.getUsername());
-            AuthorizeVO vo = new AuthorizeVO();
-            vo.setExpire(jwtUtil.expireTime());
-            vo.setRole(account.getRole());
-            vo.setToken(token);
-            vo.setUsername(account.getUsername());
+            AuthorizeVO vo = account.asViewObject(AuthorizeVO.class, v -> {
+                v.setExpire(jwtUtil.expireTime());
+                v.setToken(token);
+            });
             writer.write(RestBeen.success(vo).asJsonString());
         }
     }
