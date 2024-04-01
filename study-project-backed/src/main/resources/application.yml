@@ -1,13 +1,15 @@
 spring:
   mail:
     host: smtp.163.com
-    username: 17573402104@qq.com
+    username: 17573402104@163.com
     password: KEZANFQTFNWNFMHE
   rabbitmq:
-    addresses: localhost
+    addresses: 192.168.42.111
     username: admin
     password: admin
     virtual-host: /
+    port: 5672
+
   security:
     jwt:
       key: abcdefghi
@@ -22,4 +24,8 @@ spring:
     redis:
       host: localhost
       port: 6379
+  amqp:
+    deserialization:
+      trust:
+        all: true
 
