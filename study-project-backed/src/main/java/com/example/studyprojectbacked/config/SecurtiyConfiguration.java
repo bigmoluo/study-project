@@ -32,20 +32,12 @@ import java.util.Date;
 
 @Configuration
 public class SecurtiyConfiguration {
-
     @Resource
     JwtUtil jwtUtil;
-
     @Resource
     JwtAuthorizeFilter jwtAuthorizeFilter;
-    @Bean
-    PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
-
     @Resource
     UserMapper userMapper;
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http

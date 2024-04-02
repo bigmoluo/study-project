@@ -1,6 +1,7 @@
 package com.example.studyprojectbacked.service.impl;
 
 import com.example.studyprojectbacked.entity.dto.Account;
+import com.example.studyprojectbacked.entity.vo.request.EmailRegisterVO;
 import com.example.studyprojectbacked.mapper.UserMapper;
 import com.example.studyprojectbacked.service.AccountService;
 import com.example.studyprojectbacked.util.Const;
@@ -12,8 +13,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -30,7 +33,8 @@ public class AccountServiceImpl implements AccountService {
     StringRedisTemplate stringRedisTemplate;
     @Resource
     FlowUtil flowUtil;
-
+    @Resource
+    PasswordEncoder passwordEncoder;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if(username == null) throw new UsernameNotFoundException("用户名不能为空");
@@ -57,8 +61,35 @@ public class AccountServiceImpl implements AccountService {
         }
 
     }
+    @Override
+    public String registerEmailAccount(EmailRegisterVO vo) {
+        String email = vo.getEmail();
+        String username = vo.getUsername();
+        String key = Const.VERIFY_EMAIL_DATA+email;
+        String code = stringRedisTemplate.opsForValue().get(key);
+        if (code == null) return "请先获取验证码";
+        if (!code.equals(vo.getCode())) return "验证码输入错误，请重新输入";
+        if (existAccountByEmail(email)) return "此电子邮件已被其他用户注册";
+        if (existAccountByUsername(username)) return "此用户名已被其他人注册，请更新一个新的用户名";
+        String password = passwordEncoder.encode(vo.getPassword());
+        Account account = new Account(null,email,username,password,"USER",new Date());
+        if (userMapper.saveAccount(account)) {
+            stringRedisTemplate.delete(key);
+            return null;
+        } else {
+            return "内部错误，请联系管理员";
+        }
+    }
     private boolean verifyLimit(String ip){
         String key = Const.VERIFY_EMAIL_LIMIT + ip;
         return flowUtil.limitOnceCheck(key,Const.BLOCK_TIME);
+    }
+
+    private boolean existAccountByEmail(String email){
+        return userMapper.getAccountByUsernameOrEmail(email) != null;
+    }
+
+    private boolean existAccountByUsername(String username){
+        return userMapper.getAccountByUsernameOrEmail(username) != null;
     }
 }
