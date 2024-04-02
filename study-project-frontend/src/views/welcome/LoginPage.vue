@@ -1,5 +1,4 @@
 <script setup>
-
 import {Lock, User} from "@element-plus/icons-vue";
 import {reactive, ref} from "vue";
 import {login} from "@/net/indexMethod.js";
@@ -73,7 +72,7 @@ function userLogin(){
               <span style="color: gray">没有账户</span>
             </el-divider>
             <div style="margin-top: 20px">
-              <el-button style=" width: 270px" type="warning" plain>注册账号</el-button>
+              <el-button @click="router.push('/register')" style=" width: 270px" type="warning" plain>注册账号</el-button>
             </div>
           </el-form>
       </div>

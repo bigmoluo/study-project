@@ -13,8 +13,12 @@
         <div style="margin-top: 10px">在这里你可以学习到许多后端以及Vue相关的知识，以及Java，如何搭建网站等等技术</div>
         <div style="margin-top: 5px">每天学习一小时，下一个Java之父就是你</div>
       </div>
-      <div style="width: 350px;background-color: white">
-        <router-view/>
+      <div class="right-card">
+        <router-view v-slot="{Component}">
+          <transition name="el-fade-in-linear" mode="out-in">
+            <component :is="Component"/>
+          </transition>
+        </router-view>
       </div>
 
     </div>
@@ -26,6 +30,12 @@
     bottom: 30px;
     left: 30px;
     color: white;
-    text-shadow: 0 0 10px;
+    text-shadow: 0 0 10px black;
 }
+.right-card {
+  width: 400px;
+  z-index: 1;
+  background-color: white;
+}
+
 </style>
