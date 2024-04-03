@@ -2,6 +2,8 @@ package com.example.studyprojectbacked.service.impl;
 
 import com.example.studyprojectbacked.entity.dto.Account;
 import com.example.studyprojectbacked.entity.vo.request.EmailRegisterVO;
+import com.example.studyprojectbacked.entity.vo.request.EmailResetVO;
+import com.example.studyprojectbacked.entity.vo.request.ResetConfirmVO;
 import com.example.studyprojectbacked.mapper.UserMapper;
 import com.example.studyprojectbacked.service.AccountService;
 import com.example.studyprojectbacked.util.Const;
@@ -65,8 +67,7 @@ public class AccountServiceImpl implements AccountService {
     public String registerEmailAccount(EmailRegisterVO vo) {
         String email = vo.getEmail();
         String username = vo.getUsername();
-        String key = Const.VERIFY_EMAIL_DATA+email;
-        String code = stringRedisTemplate.opsForValue().get(key);
+        String code = stringRedisTemplate.opsForValue().get(this.getRedisCode(email));
         if (code == null) return "请先获取验证码";
         if (!code.equals(vo.getCode())) return "验证码输入错误，请重新输入";
         if (existAccountByEmail(email)) return "此电子邮件已被其他用户注册";
@@ -74,12 +75,39 @@ public class AccountServiceImpl implements AccountService {
         String password = passwordEncoder.encode(vo.getPassword());
         Account account = new Account(null,email,username,password,"USER",new Date());
         if (userMapper.saveAccount(account)) {
-            stringRedisTemplate.delete(key);
+            stringRedisTemplate.delete(this.getRedisCode(email));
             return null;
         } else {
             return "内部错误，请联系管理员";
         }
     }
+
+    @Override
+    public String resetConfirm(ResetConfirmVO vo) {
+        String email = vo.getEmail();
+        String code = stringRedisTemplate.opsForValue().get(this.getRedisCode(email));
+        if (code == null) return "请先获取验证码";
+        if (!code.equals(vo.getCode())) return "验证码输入错误，请重新输入";
+        return null;
+    }
+
+    @Override
+    public String resetEmailAccountPassword(EmailResetVO vo) {
+        String email = vo.getEmail();
+        String verify = this.resetConfirm(new ResetConfirmVO(vo.getEmail(),vo.getCode()));
+        if (verify != null) return verify;
+        String password = passwordEncoder.encode(vo.getPassword());
+        boolean update =  userMapper.updateAccountByEmail(password,email);
+        if (update){
+            stringRedisTemplate.delete(this.getRedisCode(email));
+        }
+        return null;
+    }
+
+    private String getRedisCode(String email){
+        return Const.VERIFY_EMAIL_DATA + email;
+    }
+
     private boolean verifyLimit(String ip){
         String key = Const.VERIFY_EMAIL_LIMIT + ip;
         return flowUtil.limitOnceCheck(key,Const.BLOCK_TIME);
