@@ -42,7 +42,7 @@ public class SecurtiyConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(auth ->{
-                    auth.requestMatchers("/api/auth/**").permitAll();
+                    auth.requestMatchers("/api/auth/**","/error").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .formLogin(conf -> {

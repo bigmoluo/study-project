@@ -21,6 +21,10 @@ public record RestBeen<T> (int code, T data, String message) {
         return failure(code,"请求失败");
     }
 
+    public static <T> RestBeen<T> forbidden(String message){
+        return RestBeen.failure(400, message);
+    }
+
     public String asJsonString(){
         return JSONObject.toJSONString(this, JSONWriter.Feature.WriteNulls);
     }
