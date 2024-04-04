@@ -4,6 +4,7 @@ import com.example.studyprojectbacked.entity.RestBeen;
 import com.example.studyprojectbacked.entity.dto.Account;
 import com.example.studyprojectbacked.entity.vo.response.AuthorizeVO;
 import com.example.studyprojectbacked.filter.JwtAuthorizeFilter;
+import com.example.studyprojectbacked.filter.RequestLogFilter;
 import com.example.studyprojectbacked.mapper.UserMapper;
 import com.example.studyprojectbacked.util.JwtUtil;
 import com.fasterxml.jackson.databind.util.BeanUtil;
@@ -38,12 +39,14 @@ public class SecurtiyConfiguration {
     JwtAuthorizeFilter jwtAuthorizeFilter;
     @Resource
     UserMapper userMapper;
+    @Resource
+    RequestLogFilter requestLogFilter;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(auth ->{
                     auth.requestMatchers("/api/auth/**","/error").permitAll();
-                    auth.anyRequest().authenticated();
+                    auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll();
                 })
                 .formLogin(conf -> {
                     conf.loginProcessingUrl("/api/auth/login");
@@ -61,7 +64,8 @@ public class SecurtiyConfiguration {
                 .sessionManagement(conf -> {
                     conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
-                .addFilterBefore(jwtAuthorizeFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(requestLogFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthorizeFilter, RequestLogFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .build();
     }
@@ -74,7 +78,7 @@ public class SecurtiyConfiguration {
         if(exceptionOrAuthentication instanceof AccessDeniedException exception){
             writer.write(RestBeen.failure(404,exception.getMessage()).asJsonString());
         } else if (exceptionOrAuthentication instanceof Exception exception) {
-            writer.write(RestBeen.failure(401,exception.getMessage()).asJsonString());
+            writer.write(RestBeen.unauthorized(exception.getMessage()).asJsonString());
         } else if (exceptionOrAuthentication instanceof Authentication authentication){
             User user = (User) authentication.getPrincipal();
             Account account = userMapper.getAccountByUsernameOrEmail(user.getUsername());

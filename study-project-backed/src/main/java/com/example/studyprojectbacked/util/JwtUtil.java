@@ -61,7 +61,7 @@ public class JwtUtil {
         return JWT.create()
                 .withJWTId(UUID.randomUUID().toString())
                 .withClaim("id", id)
-                .withClaim("name",userDetails.getUsername())
+                .withClaim("name",name)
                 .withClaim("authorities",
                         userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
                 .withExpiresAt(expire)

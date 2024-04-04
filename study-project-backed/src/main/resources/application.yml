@@ -9,7 +9,6 @@ spring:
     password: admin
     virtual-host: /
     port: 5672
-
   security:
     jwt:
       key: abcdefghi
@@ -24,8 +23,9 @@ spring:
     redis:
       host: localhost
       port: 6379
-  amqp:
-    deserialization:
-      trust:
-        all: true
+  web:
+    cors:
+      origin: '*'
+      credentials: false
+      methods: '*'
 

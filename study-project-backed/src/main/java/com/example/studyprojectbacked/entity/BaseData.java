@@ -1,5 +1,8 @@
 package com.example.studyprojectbacked.entity;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.function.Consumer;
@@ -21,8 +24,10 @@ public interface BaseData {
                 this.convert(declaredField,v);
             }
             return v;
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+        } catch (ReflectiveOperationException exception) {
+            Logger logger = LoggerFactory.getLogger(BaseData.class);
+            logger.error("在VO与DTO转换时出现了一些错误", exception);
+            throw new RuntimeException(exception);
         }
     }
 
