@@ -5,13 +5,11 @@ import com.example.studyprojectbacked.entity.dto.Account;
 import com.example.studyprojectbacked.entity.vo.response.AuthorizeVO;
 import com.example.studyprojectbacked.filter.JwtAuthorizeFilter;
 import com.example.studyprojectbacked.filter.RequestLogFilter;
-import com.example.studyprojectbacked.mapper.UserMapper;
+import com.example.studyprojectbacked.mapper.AccountMapper;
 import com.example.studyprojectbacked.util.JwtUtil;
-import com.fasterxml.jackson.databind.util.BeanUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,17 +17,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.AccessDeniedException;
-import java.util.Date;
 
 @Configuration
 public class SecurtiyConfiguration {
@@ -38,7 +31,7 @@ public class SecurtiyConfiguration {
     @Resource
     JwtAuthorizeFilter jwtAuthorizeFilter;
     @Resource
-    UserMapper userMapper;
+    AccountMapper accountMapper;
     @Resource
     RequestLogFilter requestLogFilter;
     @Bean
@@ -47,6 +40,7 @@ public class SecurtiyConfiguration {
                 .authorizeHttpRequests(auth ->{
                     auth.requestMatchers("/api/auth/**","/error").permitAll();
                     auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll();
+                    auth.anyRequest().authenticated();
                 })
                 .formLogin(conf -> {
                     conf.loginProcessingUrl("/api/auth/login");
@@ -81,7 +75,7 @@ public class SecurtiyConfiguration {
             writer.write(RestBeen.unauthorized(exception.getMessage()).asJsonString());
         } else if (exceptionOrAuthentication instanceof Authentication authentication){
             User user = (User) authentication.getPrincipal();
-            Account account = userMapper.getAccountByUsernameOrEmail(user.getUsername());
+            Account account = accountMapper.getAccountByUsernameOrEmail(user.getUsername());
             String token = jwtUtil.createJwt(user,account.getId(),account.getUsername());
             AuthorizeVO vo = account.asViewObject(AuthorizeVO.class, v -> {
                 v.setExpire(jwtUtil.expireTime());

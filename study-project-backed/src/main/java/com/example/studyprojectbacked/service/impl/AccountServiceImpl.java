@@ -4,7 +4,7 @@ import com.example.studyprojectbacked.entity.dto.Account;
 import com.example.studyprojectbacked.entity.vo.request.EmailRegisterVO;
 import com.example.studyprojectbacked.entity.vo.request.EmailResetVO;
 import com.example.studyprojectbacked.entity.vo.request.ResetConfirmVO;
-import com.example.studyprojectbacked.mapper.UserMapper;
+import com.example.studyprojectbacked.mapper.AccountMapper;
 import com.example.studyprojectbacked.service.AccountService;
 import com.example.studyprojectbacked.util.Const;
 import com.example.studyprojectbacked.util.FlowUtil;
@@ -13,13 +13,11 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class AccountServiceImpl implements AccountService {
 
     @Resource
-    UserMapper userMapper;
+    AccountMapper accountMapper;
     @Resource
     RabbitTemplate rabbitTemplate;
     @Resource
@@ -40,7 +38,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if(username == null) throw new UsernameNotFoundException("用户名不能为空");
-        Account account = userMapper.getAccountByUsernameOrEmail(username);
+        Account account = accountMapper.getAccountByUsernameOrEmail(username);
         if(account == null) throw new UsernameNotFoundException("用户名或密码错误");
         return User
                 .withUsername(username)
@@ -74,7 +72,7 @@ public class AccountServiceImpl implements AccountService {
         if (existAccountByUsername(username)) return "此用户名已被其他人注册，请更新一个新的用户名";
         String password = passwordEncoder.encode(vo.getPassword());
         Account account = new Account(null,email,username,password,"USER",new Date());
-        if (userMapper.saveAccount(account)) {
+        if (accountMapper.saveAccount(account)) {
             stringRedisTemplate.delete(this.getRedisCode(email));
             return null;
         } else {
@@ -97,11 +95,16 @@ public class AccountServiceImpl implements AccountService {
         String verify = this.resetConfirm(new ResetConfirmVO(vo.getEmail(),vo.getCode()));
         if (verify != null) return verify;
         String password = passwordEncoder.encode(vo.getPassword());
-        boolean update =  userMapper.updateAccountByEmail(password,email);
+        boolean update =  accountMapper.updateAccountByEmail(password,email);
         if (update){
             stringRedisTemplate.delete(this.getRedisCode(email));
         }
         return null;
+    }
+
+    @Override
+    public Account findAccountById(int id) {
+        return accountMapper.getAccountById(id);
     }
 
     private String getRedisCode(String email){
@@ -114,10 +117,10 @@ public class AccountServiceImpl implements AccountService {
     }
 
     private boolean existAccountByEmail(String email){
-        return userMapper.getAccountByUsernameOrEmail(email) != null;
+        return accountMapper.getAccountByUsernameOrEmail(email) != null;
     }
 
     private boolean existAccountByUsername(String username){
-        return userMapper.getAccountByUsernameOrEmail(username) != null;
+        return accountMapper.getAccountByUsernameOrEmail(username) != null;
     }
 }

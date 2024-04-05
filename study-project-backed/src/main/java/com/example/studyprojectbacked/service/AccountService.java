@@ -1,5 +1,6 @@
 package com.example.studyprojectbacked.service;
 
+import com.example.studyprojectbacked.entity.dto.Account;
 import com.example.studyprojectbacked.entity.vo.request.EmailRegisterVO;
 import com.example.studyprojectbacked.entity.vo.request.EmailResetVO;
 import com.example.studyprojectbacked.entity.vo.request.ResetConfirmVO;
@@ -10,4 +11,5 @@ public interface AccountService extends UserDetailsService {
     String registerEmailAccount(EmailRegisterVO vo);
     String resetConfirm(ResetConfirmVO vo);
     String resetEmailAccountPassword(EmailResetVO vo);
+    Account findAccountById(int id);
 }
