@@ -3,7 +3,9 @@ package com.example.studyprojectbacked.controller;
 import com.example.studyprojectbacked.entity.RestBeen;
 import com.example.studyprojectbacked.entity.dto.Account;
 import com.example.studyprojectbacked.entity.dto.AccountDetails;
+import com.example.studyprojectbacked.entity.vo.request.ChangePasswordVO;
 import com.example.studyprojectbacked.entity.vo.request.DetailsSaveVO;
+import com.example.studyprojectbacked.entity.vo.request.ModifyEmailVO;
 import com.example.studyprojectbacked.entity.vo.response.AccountDetailsVO;
 import com.example.studyprojectbacked.entity.vo.response.AccountVO;
 import com.example.studyprojectbacked.service.AccountDetailsService;
@@ -14,6 +16,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @RestController
 @RequestMapping("/api/user")
@@ -41,5 +44,26 @@ public class AccountController {
                                       @RequestBody @Valid DetailsSaveVO vo){
         boolean success = accountDetailsService.savaAccountDetails(id,vo);
         return success ? RestBeen.success() : RestBeen.failure(400, "此用户名已被其他用户注册，请重新更换！");
+    }
+
+    @PostMapping("/modify-email")
+    public RestBeen<Void> modifyEmail(@RequestAttribute(Const.ATTR_USER_ID) int id,
+                                      @RequestBody @Valid ModifyEmailVO vo){
+        return this.messageHandle(() -> accountService.modifyEmailById(id, vo));
+    }
+
+    @PostMapping("/change-password")
+    public RestBeen<Void> changePassword(@RequestAttribute(Const.ATTR_USER_ID) int id,
+                                         @RequestBody @Valid ChangePasswordVO vo){
+        return this.messageHandle(() -> accountService.changePassword(id, vo));
+    }
+
+    private <T> RestBeen<T> messageHandle(Supplier<String> action){
+        String message = action.get();
+        if (message == null){
+            return RestBeen.success();
+        } else {
+            return RestBeen.failure(400, message);
+        }
     }
 }

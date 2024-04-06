@@ -30,7 +30,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
             } else {
                 accountDetailsMapper.updateAccountDetails(id, accountDetails);
             }
-            accountMapper.updateAccountUsernameByUsername(id, vo.getUsername());
+            accountMapper.updateAccountUsernameById(id, vo.getUsername());
             return true;
         }
         return false;
