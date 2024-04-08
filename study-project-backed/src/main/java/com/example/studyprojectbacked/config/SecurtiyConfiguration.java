@@ -39,6 +39,7 @@ public class SecurtiyConfiguration {
         return http
                 .authorizeHttpRequests(auth ->{
                     auth.requestMatchers("/api/auth/**","/error").permitAll();
+                    auth.requestMatchers("images/**").permitAll();
                     auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll();
                     auth.anyRequest().authenticated();
                 })

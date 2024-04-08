@@ -28,4 +28,8 @@ spring:
       origin: '*'
       credentials: false
       methods: '*'
+  minio:
+    endpoint: 'http://192.168.42.111:9000'
+    username: 'minio'
+    password: 'password'
 

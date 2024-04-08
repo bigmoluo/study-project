@@ -27,4 +27,7 @@ public interface AccountMapper {
     String getAccountPasswordById(int id);
     @Update("update db_account set password = #{password} where id = #{id}")
     boolean updateAccountPasswordById(@Param("id") int id,@Param("password") String password);
+
+    @Update("update db_account set avatar = #{avatar} where id = #{id}")
+    boolean updateAccountAvatarById(@Param("id") int id, @Param("avatar") String avatar);
 }

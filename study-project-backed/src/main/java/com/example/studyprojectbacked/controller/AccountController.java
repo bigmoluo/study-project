@@ -6,9 +6,12 @@ import com.example.studyprojectbacked.entity.dto.AccountDetails;
 import com.example.studyprojectbacked.entity.vo.request.ChangePasswordVO;
 import com.example.studyprojectbacked.entity.vo.request.DetailsSaveVO;
 import com.example.studyprojectbacked.entity.vo.request.ModifyEmailVO;
+import com.example.studyprojectbacked.entity.vo.request.PrivacySaveVO;
 import com.example.studyprojectbacked.entity.vo.response.AccountDetailsVO;
+import com.example.studyprojectbacked.entity.vo.response.AccountPrivacyVO;
 import com.example.studyprojectbacked.entity.vo.response.AccountVO;
 import com.example.studyprojectbacked.service.AccountDetailsService;
+import com.example.studyprojectbacked.service.AccountPrivacyService;
 import com.example.studyprojectbacked.service.AccountService;
 import com.example.studyprojectbacked.util.Const;
 import jakarta.annotation.Resource;
@@ -25,6 +28,8 @@ public class AccountController {
     AccountService accountService;
     @Resource
     AccountDetailsService accountDetailsService;
+    @Resource
+    AccountPrivacyService privacyService;
     @GetMapping("/info")
     public RestBeen<AccountVO> info(@RequestAttribute(Const.ATTR_USER_ID) int id){
         Account account = accountService.findAccountById(id);
@@ -56,6 +61,18 @@ public class AccountController {
     public RestBeen<Void> changePassword(@RequestAttribute(Const.ATTR_USER_ID) int id,
                                          @RequestBody @Valid ChangePasswordVO vo){
         return this.messageHandle(() -> accountService.changePassword(id, vo));
+    }
+
+    @PostMapping("/save-privacy")
+    public RestBeen<Void> savePrivacy(@RequestAttribute(Const.ATTR_USER_ID) int id,
+                                      @RequestBody @Valid PrivacySaveVO vo){
+        privacyService.savePrivacy(id, vo);
+        return RestBeen.success();
+    }
+
+    @GetMapping("/privacy")
+    public RestBeen<AccountPrivacyVO> privacy(@RequestAttribute(Const.ATTR_USER_ID) int id){
+        return RestBeen.success(privacyService.getAccountPrivacy(id).asViewObject(AccountPrivacyVO.class));
     }
 
     private <T> RestBeen<T> messageHandle(Supplier<String> action){

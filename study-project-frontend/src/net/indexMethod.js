@@ -38,8 +38,9 @@ function deleteAccessToken(){
 }
 
 function accessHeader(){
-    const token = takeAccessToken()
-    return token ? { 'Authorization': `Bearer ${takeAccessToken()}`} : {}
+    return {
+        'Authorization': `Bearer ${takeAccessToken()}`
+    }
 }
 
 function internalPost(url, data, header, success, failure = defaultFailure, error = defaultError){
@@ -93,4 +94,4 @@ function unauthorized(){
     return !takeAccessToken()
 }
 
-export {login, logout, get, post, unauthorized}
+export {login, logout, get, post, unauthorized, accessHeader}

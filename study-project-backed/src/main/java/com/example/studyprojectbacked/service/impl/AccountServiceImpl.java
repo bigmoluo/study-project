@@ -69,7 +69,7 @@ public class AccountServiceImpl implements AccountService {
         if (existAccountByEmail(email)) return "此电子邮件已被其他用户注册";
         if (existAccountByUsername(username)) return "此用户名已被其他人注册，请更新一个新的用户名";
         String password = passwordEncoder.encode(vo.getPassword());
-        Account account = new Account(null,email,username,password,"USER",new Date());
+        Account account = new Account(null,email,username,password,"USER",null,new Date());
         if (accountMapper.saveAccount(account)) {
             this.deleteEmailVerifyCode(email);
             return null;
