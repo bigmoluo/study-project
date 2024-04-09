@@ -32,5 +32,7 @@ spring:
     endpoint: 'http://192.168.42.111:9000'
     username: 'minio'
     password: 'password'
+  weather:
+    key: a91c85d8ec8d4fefb6af6de7c2d4b76d
 server:
   port: 8000
