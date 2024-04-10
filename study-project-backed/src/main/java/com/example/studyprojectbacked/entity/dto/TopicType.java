@@ -8,4 +8,5 @@ public class TopicType implements BaseData {
 	Integer id;
 	String name;
 	String desc;
+	String color;
 }

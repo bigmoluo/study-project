@@ -8,17 +8,19 @@ import { ImageExtend, QuillWatch} from "quill-image-super-solution-module"
 import axios from "axios";
 import {ElMessage} from "element-plus";
 import {accessHeader, get, post} from "@/net/indexMethod.js";
+import ColorDot from "@/components/ColorDot.vue";
+import {useStore} from "@/stores/index.js";
 
 defineProps({
     show: Boolean
 })
 const refEditor = ref()
+const store = useStore()
 const editor = reactive({
     type: null,
     title: '',
     text: '',
     uploading: false,
-    types: []
 })
 
 function initEditor() {
@@ -51,7 +53,7 @@ function submitTopic() {
         return;
     }
     post('api/forum/create-topic', {
-        type: editor.type,
+        type: editor.type.id,
         title: editor.title,
         content: editor.text
     }, () => {
@@ -63,7 +65,7 @@ const emit = defineEmits(['close','success'])
 Quill.register('modules/imageResize', ImageResize)
 Quill.register('modules/ImageExtend', ImageExtend)
 
-get('/api/forum/types', data => editor.types = data)
+
 
 const editorOption = {
     modules: {
@@ -133,15 +135,24 @@ const editorOption = {
             </template>
             <div style="display: flex; gap: 10px">
                 <div style="width: 150px">
-                    <el-select placeholder="选择主题类型..." v-model="editor.type" :disabled="!editor.types.length">
-                        <el-option v-for="item in editor.types" :value="item.id" :label="item.name"/>
+                    <el-select placeholder="选择主题类型..." value-key="id" v-model="editor.type" :disabled="!store.forum.types.length">
+                        <el-option v-for="item in store.forum.types" :value="item" :label="item.name">
+                            <div>
+                                <color-dot :color="item.color"/>
+                                <span style="margin-left: 10px">{{item.name}}</span>
+                            </div>
+                        </el-option>
                     </el-select>
                 </div>
                 <div style="flex: 1">
-                    <el-input v-model="editor.title" placeholder="请输入帖子标题..." :prefix-icon="Document" maxlength="30"/>
+                    <el-input v-model="editor.title" placeholder="请输入帖子标题..." :prefix-icon="Document" maxlength="40"/>
                 </div>
             </div>
-            <div style="margin-top: 15px; height: 460px; overflow: hidden"
+            <div style="margin-top: 5px; font-size: 13px; color: grey">
+                <color-dot :color="editor.type ? editor.type.color : '#FFFFFF'"/>
+                <span style="margin-left: 5px;">{{editor.type ? editor.type.desc : '请在上方选择一个帖子类型'}}</span>
+            </div>
+            <div style="margin-top: 15px; height: 430px; overflow: hidden"
                  v-loading="editor.uploading"
                  element-loading-text="正在上传图片，请稍后...">
                 <quill-editor v-model:content="editor.text" style="height: calc(100% - 45px)"
