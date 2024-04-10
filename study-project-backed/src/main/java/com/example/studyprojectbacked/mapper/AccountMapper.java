@@ -30,4 +30,7 @@ public interface AccountMapper {
 
     @Update("update db_account set avatar = #{avatar} where id = #{id}")
     boolean updateAccountAvatarById(@Param("id") int id, @Param("avatar") String avatar);
+
+    @Select("select avatar from db_account where id = #{id}")
+    String getAccountAvatarById(int id);
 }

@@ -11,7 +11,9 @@ public class Const {
     public static final String FLOW_LIMIT_BLOCK = "flow:block:";
 
     public static final int PERIOD_LIMIT_COUNTER = 10;
-    //请求自定义属性
     public final static String ATTR_USER_ID = "userId";
+    public final static String FORUM_WEATHER_CACHE = "weather:cache:";
+    public final static String FORUM_IMAGE_COUNTER = "forum:image:";
+    public final static String FORUM_TOPIC_CREATE_COUNTER = "forum:topic:create:";
 
 }

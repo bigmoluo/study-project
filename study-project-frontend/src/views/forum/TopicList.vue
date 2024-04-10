@@ -3,9 +3,10 @@
 import LightCard from "@/components/LightCard.vue";
 import {CollectionTag, EditPen, Link, MostlyCloudy} from "@element-plus/icons-vue";
 import Weather from "@/components/Weather.vue";
-import {computed, reactive} from "vue";
+import {computed, reactive, ref} from "vue";
 import {get} from "@/net/indexMethod.js";
 import {ElMessage} from "element-plus";
+import TopicEditor from "@/components/TopicEditor.vue";
 
 const weather = reactive({
     location: {},
@@ -14,9 +15,12 @@ const weather = reactive({
     success: false
 })
 
+const editor = ref(false)
+
+
 const today = computed(() => {
     const date = new Date()
-    return `${date.getFullYear()} 年 ${date.getMonth()} 月 ${date.getDay()} 日`
+    return `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日`
 })
 
 navigator.geolocation.getCurrentPosition( position => {
@@ -43,7 +47,7 @@ navigator.geolocation.getCurrentPosition( position => {
     <div style="display: flex; margin: 20px auto;gap: 20px; max-width: 900px">
         <div style="flex: 1">
             <light-card>
-                <div class="create-topic">
+                <div class="create-topic" @click="editor = true">
                     <el-icon><EditPen/></el-icon>
                      点击发表主题...
                 </div>
@@ -106,6 +110,7 @@ navigator.geolocation.getCurrentPosition( position => {
                 </div>
             </div>
         </div>
+        <TopicEditor :show="editor" @close="editor = false" @success="editor = false"/>
     </div>
 </template>
 
@@ -121,7 +126,7 @@ navigator.geolocation.getCurrentPosition( position => {
     overflow: hidden;
 }
 .create-topic {
-    background-color: darkgray;
+    background-color: #ececf3;
     border-radius: 5px;
     height: 40px;
     font-size: 14px;
@@ -131,5 +136,8 @@ navigator.geolocation.getCurrentPosition( position => {
     &:hover {
         cursor: pointer;
     }
+}
+.dark .create-topic {
+    background-color: #323233;
 }
 </style>

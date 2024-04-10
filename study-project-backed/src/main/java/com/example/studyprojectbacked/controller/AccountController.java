@@ -14,6 +14,7 @@ import com.example.studyprojectbacked.service.AccountDetailsService;
 import com.example.studyprojectbacked.service.AccountPrivacyService;
 import com.example.studyprojectbacked.service.AccountService;
 import com.example.studyprojectbacked.util.Const;
+import com.example.studyprojectbacked.util.ControllerUtils;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,8 @@ public class AccountController {
     AccountDetailsService accountDetailsService;
     @Resource
     AccountPrivacyService privacyService;
+    @Resource
+    ControllerUtils utils;
     @GetMapping("/info")
     public RestBeen<AccountVO> info(@RequestAttribute(Const.ATTR_USER_ID) int id){
         Account account = accountService.findAccountById(id);
@@ -54,13 +57,13 @@ public class AccountController {
     @PostMapping("/modify-email")
     public RestBeen<Void> modifyEmail(@RequestAttribute(Const.ATTR_USER_ID) int id,
                                       @RequestBody @Valid ModifyEmailVO vo){
-        return this.messageHandle(() -> accountService.modifyEmailById(id, vo));
+        return utils.messageHandle(() -> accountService.modifyEmailById(id, vo));
     }
 
     @PostMapping("/change-password")
     public RestBeen<Void> changePassword(@RequestAttribute(Const.ATTR_USER_ID) int id,
                                          @RequestBody @Valid ChangePasswordVO vo){
-        return this.messageHandle(() -> accountService.changePassword(id, vo));
+        return utils.messageHandle(() -> accountService.changePassword(id, vo));
     }
 
     @PostMapping("/save-privacy")
@@ -75,12 +78,5 @@ public class AccountController {
         return RestBeen.success(privacyService.getAccountPrivacy(id).asViewObject(AccountPrivacyVO.class));
     }
 
-    private <T> RestBeen<T> messageHandle(Supplier<String> action){
-        String message = action.get();
-        if (message == null){
-            return RestBeen.success();
-        } else {
-            return RestBeen.failure(400, message);
-        }
-    }
+
 }

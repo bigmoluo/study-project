@@ -47,13 +47,13 @@ public class FlowLimitFilter extends HttpFilter {
     private boolean limitPeriodCheck(String ip) {
         if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(Const.FLOW_LIMIT_COUNTER + ip))){
             long increment = Optional.ofNullable(stringRedisTemplate.opsForValue().increment(Const.FLOW_LIMIT_COUNTER + ip)).orElse(0L);
-            if (increment > 20) {
+            if (increment > 50) {
                 stringRedisTemplate.opsForValue().set(Const.FLOW_LIMIT_BLOCK + ip, "", 30, TimeUnit.SECONDS);
                 stringRedisTemplate.delete(Const.FLOW_LIMIT_COUNTER + ip);
                 return false;
             }
         } else {
-            stringRedisTemplate.opsForValue().set(Const.FLOW_LIMIT_COUNTER + ip, "1", 3, TimeUnit.MINUTES);
+            stringRedisTemplate.opsForValue().set(Const.FLOW_LIMIT_COUNTER + ip, "1", 5, TimeUnit.SECONDS);
         }
         return true;
     }
