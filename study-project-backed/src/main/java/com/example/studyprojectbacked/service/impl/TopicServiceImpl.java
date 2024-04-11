@@ -2,12 +2,12 @@ package com.example.studyprojectbacked.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.example.studyprojectbacked.entity.dto.Topic;
-import com.example.studyprojectbacked.entity.dto.TopicType;
+import com.example.studyprojectbacked.entity.dto.*;
 import com.example.studyprojectbacked.entity.vo.request.TopicCreateVO;
+import com.example.studyprojectbacked.entity.vo.response.TopicDetailVO;
 import com.example.studyprojectbacked.entity.vo.response.TopicPreviewVO;
-import com.example.studyprojectbacked.mapper.TopicMapper;
-import com.example.studyprojectbacked.mapper.TopicTypeMapper;
+import com.example.studyprojectbacked.entity.vo.response.TopicTopVO;
+import com.example.studyprojectbacked.mapper.*;
 import com.example.studyprojectbacked.service.TopicService;
 import com.example.studyprojectbacked.util.CacheUtils;
 import com.example.studyprojectbacked.util.Const;
@@ -15,6 +15,7 @@ import com.example.studyprojectbacked.util.FlowUtil;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+import net.sf.jsqlparser.statement.select.Top;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,12 @@ public class TopicServiceImpl implements TopicService {
 	TopicMapper topicMapper;
 	@Resource
 	CacheUtils cacheUtils;
+	@Resource
+	AccountMapper accountMapper;
+	@Resource
+	AccountDetailsMapper accountDetailsMapper;
+	@Resource
+	AccountPrivacyMapper accountPrivacyMapper;
 
 	private Set<Integer> types = null;
 
@@ -61,7 +68,7 @@ public class TopicServiceImpl implements TopicService {
 		topic.setUid(uid);
 		topic.setTime(new Date());
 		if (topicMapper.saveTopic(topic)) {
-			cacheUtils.deleteCache(Const.FORUM_TOPIC_PREVIEW_CACHE + "*");
+			cacheUtils.deleteCachePattern(Const.FORUM_TOPIC_PREVIEW_CACHE + "*");
 			return null;
 		} else {
 			return "内部错误，请联系管理员！";
@@ -84,8 +91,39 @@ public class TopicServiceImpl implements TopicService {
 		return list;
 	}
 
+	@Override
+	public List<TopicTopVO> listTopTopics() {
+		List<Topic> topics = topicMapper.getTopicByTop();
+		return topics.stream().map(topic -> {
+			TopicTopVO vo = new TopicTopVO();
+			BeanUtils.copyProperties(topic,vo);
+			return vo;
+		}).toList();
+	}
+
+	@Override
+	public TopicDetailVO getTopic(int tid) {
+		TopicDetailVO vo = new TopicDetailVO();
+		Topic topic = topicMapper.getTopicById(tid);
+		BeanUtils.copyProperties(topic,vo);
+		TopicDetailVO.User user = new TopicDetailVO.User();
+		vo.setUser(this.fillUserDetailsByPrivacy(user,topic.getUid()));
+		return vo;
+	}
+
+	private <T> T fillUserDetailsByPrivacy(T target, int uid){
+		AccountDetails details = accountDetailsMapper.findAccountDetailsById(uid);
+		Account account = accountMapper.getAccountById(uid);
+		AccountPrivacy privacy = accountPrivacyMapper.getAccountPrivacyById(uid);
+		String[] ignores = privacy.hiddenFields();
+		BeanUtils.copyProperties(account,target,ignores);
+		BeanUtils.copyProperties(details,target,ignores);
+		return target;
+	}
+
 	private TopicPreviewVO resolveToPreview(Topic topic){
 		TopicPreviewVO vo = new TopicPreviewVO();
+		BeanUtils.copyProperties(accountMapper.getAccountById(topic.getUid()), vo);
 		BeanUtils.copyProperties(topic,vo);
 		List<String> images = new ArrayList<>();
 		StringBuilder previewText = new StringBuilder();

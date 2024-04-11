@@ -3,9 +3,7 @@ package com.example.studyprojectbacked.controller;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.studyprojectbacked.entity.RestBeen;
 import com.example.studyprojectbacked.entity.vo.request.TopicCreateVO;
-import com.example.studyprojectbacked.entity.vo.response.TopicPreviewVO;
-import com.example.studyprojectbacked.entity.vo.response.TopicTypeVO;
-import com.example.studyprojectbacked.entity.vo.response.WeatherVO;
+import com.example.studyprojectbacked.entity.vo.response.*;
 import com.example.studyprojectbacked.service.TopicService;
 import com.example.studyprojectbacked.service.WeatherService;
 import com.example.studyprojectbacked.util.Const;
@@ -42,17 +40,23 @@ public class ForumController {
 				.map(type -> type.asViewObject(TopicTypeVO.class))
 				.toList());
 	}
-
 	@PostMapping("/create-topic")
 	public RestBeen<Void> createTopic(@RequestBody @Valid TopicCreateVO vo,
 									  @RequestAttribute(Const.ATTR_USER_ID) int id){
 		return utils.messageHandle(() -> topicService.createTopic(vo, id));
 	}
-
 	@GetMapping("/list-topic")
 	public RestBeen<List<TopicPreviewVO>> listTopic(@RequestParam @Min(0) int page,
 													@RequestParam @Min(0) int type){
 		return RestBeen.success(topicService.listTopicByPage(page,type));
+	}
+	@GetMapping("/top-topic")
+	public RestBeen<List<TopicTopVO>> topTopic() {
+		return RestBeen.success(topicService.listTopTopics());
+	}
+	@GetMapping("/topic")
+	public RestBeen<TopicDetailVO> topic(@RequestParam @Min(0) int tid){
+		return RestBeen.success(topicService.getTopic(tid));
 	}
 
 }

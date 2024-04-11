@@ -33,4 +33,5 @@ public interface AccountMapper {
 
     @Select("select avatar from db_account where id = #{id}")
     String getAccountAvatarById(int id);
+
 }

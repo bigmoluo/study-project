@@ -1,5 +1,4 @@
 <script setup>
-import {Sort} from "@element-plus/icons-vue";
 
 defineProps({
     icon: Object,
@@ -10,7 +9,7 @@ defineProps({
 
 <template>
     <div class="card">
-        <div class="card-header">
+        <div class="card-header" v-if="title">
             <div>
                 <el-icon style="margin-right: 3px; translate: 0 2px">
                     <component :is="icon"/>
