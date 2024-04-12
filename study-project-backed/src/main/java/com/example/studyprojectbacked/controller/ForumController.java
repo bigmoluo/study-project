@@ -58,8 +58,9 @@ public class ForumController {
 		return RestBeen.success(topicService.listTopTopics());
 	}
 	@GetMapping("/topic")
-	public RestBeen<TopicDetailVO> topic(@RequestParam @Min(0) int tid){
-		return RestBeen.success(topicService.getTopic(tid));
+	public RestBeen<TopicDetailVO> topic(@RequestParam @Min(0) int tid,
+										 @RequestAttribute(Const.ATTR_USER_ID) int id){
+		return RestBeen.success(topicService.getTopic(tid,id));
 	}
 
 	@GetMapping("/interact")
@@ -71,4 +72,8 @@ public class ForumController {
 		return RestBeen.success();
 	}
 
+	@GetMapping("/collects")
+	public RestBeen<List<TopicPreviewVO>> collects(@RequestAttribute(Const.ATTR_USER_ID) int id) {
+		return RestBeen.success(topicService.listTopicCollects(id));
+	}
 }

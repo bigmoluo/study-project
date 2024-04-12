@@ -2,13 +2,14 @@
 
 import LightCard from "@/components/LightCard.vue";
 import {
+    ArrowRightBold,
     CircleCheck,
     Clock,
     CollectionTag,
     Compass,
     Document,
     Edit,
-    EditPen,
+    EditPen, FolderOpened,
     Link, Microphone,
     MostlyCloudy,
     Picture, Star
@@ -23,6 +24,7 @@ import ColorDot from "@/components/ColorDot.vue";
 import router from "@/router/index.js";
 import TopicTag from "@/components/TopicTag.vue";
 import InteractButton from "@/components/InteractButton.vue";
+import TopicCollectList from "@/components/TopicCollectList.vue";
 
 const weather = reactive({
     location: {},
@@ -40,6 +42,7 @@ const topics = reactive({
     end: false
 })
 const store = useStore()
+const collects = ref(false)
 
 watch(() => topics.type, () => resetList(), {immediate: true})
 
@@ -169,6 +172,12 @@ navigator.geolocation.getCurrentPosition( position => {
         <div style="width: 280px">
             <div style="position: sticky; top: 20px">
                 <light-card>
+                    <div class="collect-list-button" @click="collects = true">
+                        <span><el-icon><FolderOpened/></el-icon>查看我的收藏</span>
+                        <el-icon style="transform: translateY(3px)"><ArrowRightBold/></el-icon>
+                    </div>
+                </light-card>
+                <light-card style="margin-top: 10px">
                     <div style="font-weight: bold;">
                         <el-icon><CollectionTag/></el-icon>
                         论坛公告
@@ -216,10 +225,22 @@ navigator.geolocation.getCurrentPosition( position => {
             </div>
         </div>
         <TopicEditor :show="editor" @close="editor = false" @success="onTopicCreate"/>
+        <TopicCollectList :show="collects" @close="collects = false"></TopicCollectList>
     </div>
 </template>
 
 <style lang="less" scoped>
+.collect-list-button {
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    transition: .3s;
+
+    &:hover {
+        cursor: pointer;
+        opacity: 0.6;
+    }
+}
 .top-topic {
     display: flex;
 

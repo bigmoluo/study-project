@@ -81,6 +81,17 @@ public class TopicServiceImpl implements TopicService {
 	}
 
 	@Override
+	public List<TopicPreviewVO> listTopicCollects(int uid) {
+		return topicMapper.collectTopic(uid)
+				.stream()
+				.map(topic -> {
+					TopicPreviewVO vo = new TopicPreviewVO();
+					BeanUtils.copyProperties(topic, vo);
+					return vo;
+				}).toList();
+	}
+
+	@Override
 	public List<TopicPreviewVO> listTopicByPage(int page, int type) {
 		String key = Const.FORUM_TOPIC_PREVIEW_CACHE + page + ":" + type;
 		List<TopicPreviewVO> list = cacheUtils.takeListFromCache(key, TopicPreviewVO.class);
@@ -107,13 +118,13 @@ public class TopicServiceImpl implements TopicService {
 	}
 
 	@Override
-	public TopicDetailVO getTopic(int tid) {
+	public TopicDetailVO getTopic(int tid, int uid) {
 		TopicDetailVO vo = new TopicDetailVO();
 		Topic topic = topicMapper.getTopicById(tid);
 		BeanUtils.copyProperties(topic,vo);
 		TopicDetailVO.Interact interact = new TopicDetailVO.Interact(
-				hasInteract(tid,topic.getUid(), "like"),
-				hasInteract(tid,topic.getUid(),"collect")
+				hasInteract(tid, uid, "like"),
+				hasInteract(tid, uid,"collect")
 		);
 		vo.setInteract(interact);
 		TopicDetailVO.User user = new TopicDetailVO.User();
@@ -129,6 +140,7 @@ public class TopicServiceImpl implements TopicService {
 			this.saveInteractSchedule(type);
 		}
 	}
+
 	private boolean hasInteract(int tid, int uid, String type) {
 		String key = tid + ":" +uid;
 		if (stringRedisTemplate.opsForHash().hasKey(type,key)) {
