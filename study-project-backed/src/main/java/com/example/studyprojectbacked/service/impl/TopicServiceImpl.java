@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.studyprojectbacked.entity.dto.*;
 import com.example.studyprojectbacked.entity.vo.request.TopicCreateVO;
+import com.example.studyprojectbacked.entity.vo.request.TopicUpdateVO;
 import com.example.studyprojectbacked.entity.vo.response.TopicDetailVO;
 import com.example.studyprojectbacked.entity.vo.response.TopicPreviewVO;
 import com.example.studyprojectbacked.entity.vo.response.TopicTopVO;
@@ -78,6 +79,25 @@ public class TopicServiceImpl implements TopicService {
 		} else {
 			return "内部错误，请联系管理员！";
 		}
+	}
+
+	@Override
+	public String updateTopic(int uid, TopicUpdateVO vo) {
+		if (!this.textLimitCheck(vo.getContent()))
+			return "文章内容太多，发文失败！";
+		if (!types.contains(vo.getType()))
+			return "文章类型非法！";
+		Topic topic = this.asTopic(vo);
+		topicMapper.updateTopicByIdAndUid(vo.getId(), uid, topic);
+		return  null;
+	}
+
+	private Topic asTopic( TopicUpdateVO vo) {
+		Topic topic = new Topic();
+		topic.setTitle(vo.getTitle());
+		topic.setType(vo.getType());
+		topic.setContent(vo.getContent().toString());
+		return topic;
 	}
 
 	@Override

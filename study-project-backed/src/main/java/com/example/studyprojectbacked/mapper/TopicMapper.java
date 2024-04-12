@@ -2,10 +2,7 @@ package com.example.studyprojectbacked.mapper;
 
 import com.example.studyprojectbacked.entity.dto.Interact;
 import com.example.studyprojectbacked.entity.dto.Topic;
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -76,4 +73,8 @@ public interface TopicMapper {
    			where db_topic_interact_collect.uid = #{uid}
 			""")
 	List<Topic> collectTopic(int uid);
+
+	@Update("update db_topic set title = #{topic.title}, content = #{topic.content}, type = #{topic.type} " +
+			"where uid = #{uid} and id = #{id}")
+	void updateTopicByIdAndUid(int id, int uid, Topic topic);
 }

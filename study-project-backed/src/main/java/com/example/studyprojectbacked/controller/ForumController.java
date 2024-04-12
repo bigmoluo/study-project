@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.example.studyprojectbacked.entity.RestBeen;
 import com.example.studyprojectbacked.entity.dto.Interact;
 import com.example.studyprojectbacked.entity.vo.request.TopicCreateVO;
+import com.example.studyprojectbacked.entity.vo.request.TopicUpdateVO;
 import com.example.studyprojectbacked.entity.vo.response.*;
 import com.example.studyprojectbacked.service.TopicService;
 import com.example.studyprojectbacked.service.WeatherService;
@@ -75,5 +76,11 @@ public class ForumController {
 	@GetMapping("/collects")
 	public RestBeen<List<TopicPreviewVO>> collects(@RequestAttribute(Const.ATTR_USER_ID) int id) {
 		return RestBeen.success(topicService.listTopicCollects(id));
+	}
+
+	@PostMapping("/update-topic")
+	public RestBeen<Void> updateTopic(@RequestBody @Valid TopicUpdateVO vo,
+									  @RequestAttribute(Const.ATTR_USER_ID) int id) {
+		return utils.messageHandle(() -> topicService.updateTopic(id, vo));
 	}
 }
