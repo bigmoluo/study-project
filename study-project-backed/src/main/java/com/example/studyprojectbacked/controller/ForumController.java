@@ -2,6 +2,7 @@ package com.example.studyprojectbacked.controller;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.example.studyprojectbacked.entity.RestBeen;
+import com.example.studyprojectbacked.entity.dto.Interact;
 import com.example.studyprojectbacked.entity.vo.request.TopicCreateVO;
 import com.example.studyprojectbacked.entity.vo.response.*;
 import com.example.studyprojectbacked.service.TopicService;
@@ -11,8 +12,10 @@ import com.example.studyprojectbacked.util.ControllerUtils;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,6 +60,15 @@ public class ForumController {
 	@GetMapping("/topic")
 	public RestBeen<TopicDetailVO> topic(@RequestParam @Min(0) int tid){
 		return RestBeen.success(topicService.getTopic(tid));
+	}
+
+	@GetMapping("/interact")
+	public RestBeen<Void> interact(@RequestParam @Min(0) int tid,
+								   @RequestParam @Pattern(regexp = "(like|collect)") String type,
+								   @RequestParam boolean state,
+								   @RequestAttribute(Const.ATTR_USER_ID) int id){
+		topicService.interact(new Interact(tid, id, new Date(), type), state);
+		return RestBeen.success();
 	}
 
 }

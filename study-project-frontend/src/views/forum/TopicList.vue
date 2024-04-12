@@ -2,6 +2,7 @@
 
 import LightCard from "@/components/LightCard.vue";
 import {
+    CircleCheck,
     Clock,
     CollectionTag,
     Compass,
@@ -10,7 +11,7 @@ import {
     EditPen,
     Link, Microphone,
     MostlyCloudy,
-    Picture
+    Picture, Star
 } from "@element-plus/icons-vue";
 import Weather from "@/components/Weather.vue";
 import {computed, reactive, ref, watch} from "vue";
@@ -21,6 +22,7 @@ import {useStore} from "@/stores/index.js";
 import ColorDot from "@/components/ColorDot.vue";
 import router from "@/router/index.js";
 import TopicTag from "@/components/TopicTag.vue";
+import InteractButton from "@/components/InteractButton.vue";
 
 const weather = reactive({
     location: {},
@@ -150,6 +152,14 @@ navigator.geolocation.getCurrentPosition( position => {
                             <div class="topic-content">{{item.text}}</div>
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 10px">
                                 <el-image class="topic-image" v-for="img in item.images" :src="img" fit="cover"></el-image>
+                            </div>
+                            <div style="display:flex; gap: 20px; font-size: 13px; margin-top: 10px; opacity: 0.8">
+                                <div>
+                                    <el-icon style="vertical-align: middle"><CircleCheck/></el-icon> {{item.like}}
+                                </div>
+                                <div>
+                                    <el-icon style="vertical-align: middle"><Star/></el-icon> {{item.collect}}
+                                </div>
                             </div>
                         </light-card>
                     </div>

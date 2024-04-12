@@ -1,5 +1,6 @@
 package com.example.studyprojectbacked.service;
 
+import com.example.studyprojectbacked.entity.dto.Interact;
 import com.example.studyprojectbacked.entity.dto.TopicType;
 import com.example.studyprojectbacked.entity.vo.request.TopicCreateVO;
 import com.example.studyprojectbacked.entity.vo.response.TopicDetailVO;
@@ -15,4 +16,5 @@ public interface TopicService {
 	List<TopicPreviewVO> listTopicByPage(int page, int type);
 	List<TopicTopVO> listTopTopics();
 	TopicDetailVO getTopic(int tid);
+	void interact(Interact interact, boolean state);
 }
