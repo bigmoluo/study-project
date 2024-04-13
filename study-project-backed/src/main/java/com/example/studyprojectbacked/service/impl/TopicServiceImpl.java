@@ -3,8 +3,10 @@ package com.example.studyprojectbacked.service.impl;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.studyprojectbacked.entity.dto.*;
+import com.example.studyprojectbacked.entity.vo.request.AddCommentVO;
 import com.example.studyprojectbacked.entity.vo.request.TopicCreateVO;
 import com.example.studyprojectbacked.entity.vo.request.TopicUpdateVO;
+import com.example.studyprojectbacked.entity.vo.response.CommentVO;
 import com.example.studyprojectbacked.entity.vo.response.TopicDetailVO;
 import com.example.studyprojectbacked.entity.vo.response.TopicPreviewVO;
 import com.example.studyprojectbacked.entity.vo.response.TopicTopVO;
@@ -24,6 +26,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +47,8 @@ public class TopicServiceImpl implements TopicService {
 	AccountPrivacyMapper accountPrivacyMapper;
 	@Resource
 	StringRedisTemplate stringRedisTemplate;
+	@Resource
+	TopicCommentMapper commentMapper;
 
 	private Set<Integer> types = null;
 
@@ -61,7 +66,7 @@ public class TopicServiceImpl implements TopicService {
 
 	@Override
 	public String createTopic(TopicCreateVO vo, int uid) {
-		if (!this.textLimitCheck(vo.getContent()))
+		if (!this.textLimitCheck(vo.getContent(),20000))
 			return "文章内容太多，发文失败！";
 		if (!types.contains(vo.getType()))
 			return "文章类型非法！";
@@ -83,13 +88,58 @@ public class TopicServiceImpl implements TopicService {
 
 	@Override
 	public String updateTopic(int uid, TopicUpdateVO vo) {
-		if (!this.textLimitCheck(vo.getContent()))
+		if (!this.textLimitCheck(vo.getContent(), 20000))
 			return "文章内容太多，发文失败！";
 		if (!types.contains(vo.getType()))
 			return "文章类型非法！";
 		Topic topic = this.asTopic(vo);
 		topicMapper.updateTopicByIdAndUid(vo.getId(), uid, topic);
 		return  null;
+	}
+
+	@Override
+	public String createComment(int uid, AddCommentVO vo) {
+		if (!this.textLimitCheck(JSONObject.parseObject(vo.getContent()), 2000))
+			return "评论内容太多，发文失败！";
+		String key = Const.FORUM_TOPIC_COMMENT_COUNTER + uid;
+		if (!flowUtil.limitPeriodCounterCheck(key, 2, 60))
+			return "发表评论频繁，请稍后再试！";
+		TopicComment comment = new TopicComment();
+		comment.setUid(uid);
+		BeanUtils.copyProperties(vo,comment);
+		comment.setTime(new Date());
+		commentMapper.creatTopicComment(comment);
+		return null;
+	}
+
+	@Override
+	public List<CommentVO> comments(int tid, int pageNumber) {
+		List<TopicComment> comments = commentMapper.commentList(tid, pageNumber * 10);
+		return comments.stream().map(dto -> {
+			CommentVO vo = new CommentVO();
+			BeanUtils.copyProperties(dto, vo);
+			if (dto.getQuote() > 0) {
+				TopicComment comment = commentMapper.getCommentById(dto.getQuote());
+				if (comment != null) {
+					JSONObject object = JSONObject.parseObject(comment.getContent());
+					StringBuilder builder = new StringBuilder();
+					this.shortContent(object.getJSONArray("ops"), builder, ignore -> {});
+					vo.setQuote(builder.toString());
+				} else {
+					vo.setQuote("此评论已被删除");
+				}
+
+			}
+			CommentVO.User user = new CommentVO.User();
+			this.fillUserDetailsByPrivacy(user,dto.getUid());
+			vo.setUser(user);
+			return vo;
+		}).toList();
+	}
+
+	@Override
+	public void deleteComment(int id, int uid) {
+		commentMapper.deleteComment(id, uid);
 	}
 
 	private Topic asTopic( TopicUpdateVO vo) {
@@ -149,6 +199,7 @@ public class TopicServiceImpl implements TopicService {
 		vo.setInteract(interact);
 		TopicDetailVO.User user = new TopicDetailVO.User();
 		vo.setUser(this.fillUserDetailsByPrivacy(user,topic.getUid()));
+		vo.setComments(commentMapper.commentCount(tid));
 		return vo;
 	}
 
@@ -218,6 +269,13 @@ public class TopicServiceImpl implements TopicService {
 		List<String> images = new ArrayList<>();
 		StringBuilder previewText = new StringBuilder();
 		JSONArray ops = JSONObject.parseObject(topic.getContent()).getJSONArray("ops");
+		this.shortContent(ops, previewText, obj -> images.add(obj.toString()));
+		vo.setText(previewText.length() > 300 ? previewText.substring(0,300) : previewText.toString());
+		vo.setImages(images);
+		return vo;
+	}
+
+	private void shortContent(JSONArray ops, StringBuilder previewText, Consumer<Object> imageHander){
 		for (Object op : ops) {
 			Object insert = JSONObject.from(op).get("insert");
 			if (insert instanceof String text) {
@@ -225,20 +283,17 @@ public class TopicServiceImpl implements TopicService {
 				previewText.append(text);
 			} else if (insert instanceof Map<?,?> map) {
 				Optional.ofNullable(map.get("image"))
-						.ifPresent(obj -> images.add(obj.toString()));
+						.ifPresent(imageHander);
 			}
 		}
-		vo.setText(previewText.length() > 300 ? previewText.substring(0,300) : previewText.toString());
-		vo.setImages(images);
-		return vo;
 	}
 
-	private boolean textLimitCheck(JSONObject object) {
+	private boolean textLimitCheck(JSONObject object, int max) {
 		if (object == null) return false;
 		long length = 0;
 		for (Object op : object.getJSONArray("ops")) {
 			length += JSONObject.from(op).getString("insert").length();
-			if (length > 20000) return false;
+			if (length > max) return false;
 		}
 		return true;
 	}

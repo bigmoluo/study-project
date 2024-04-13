@@ -3,6 +3,7 @@ package com.example.studyprojectbacked.controller;
 import com.alibaba.fastjson2.JSONObject;
 import com.example.studyprojectbacked.entity.RestBeen;
 import com.example.studyprojectbacked.entity.dto.Interact;
+import com.example.studyprojectbacked.entity.vo.request.AddCommentVO;
 import com.example.studyprojectbacked.entity.vo.request.TopicCreateVO;
 import com.example.studyprojectbacked.entity.vo.request.TopicUpdateVO;
 import com.example.studyprojectbacked.entity.vo.response.*;
@@ -82,5 +83,24 @@ public class ForumController {
 	public RestBeen<Void> updateTopic(@RequestBody @Valid TopicUpdateVO vo,
 									  @RequestAttribute(Const.ATTR_USER_ID) int id) {
 		return utils.messageHandle(() -> topicService.updateTopic(id, vo));
+	}
+
+	@PostMapping("/add-comment")
+	public RestBeen<Void> addComment(@Valid @RequestBody AddCommentVO vo,
+									 @RequestAttribute(Const.ATTR_USER_ID) int id){
+		return utils.messageHandle(() -> topicService.createComment(id, vo));
+	}
+
+	@GetMapping("/comments")
+	public RestBeen<List<CommentVO>> comments(@RequestParam @Min(0) int tid,
+											  @RequestParam @Min(0) int page) {
+		return RestBeen.success(topicService.comments(tid, page));
+	}
+
+	@GetMapping("/delete-comment")
+	public RestBeen<Void> deleteComment(@RequestParam @Min(0) int id,
+										@RequestAttribute(Const.ATTR_USER_ID) int uid){
+		topicService.deleteComment(id, uid);
+		return RestBeen.success();
 	}
 }

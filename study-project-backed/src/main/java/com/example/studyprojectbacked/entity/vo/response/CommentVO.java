@@ -1,32 +1,21 @@
 package com.example.studyprojectbacked.entity.vo.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
-public class TopicDetailVO {
-	Integer id;
-	String title;
+public class CommentVO {
+	int id;
 	String content;
-	Integer type;
 	Date time;
+	String quote;
 	User user;
-	Interact interact;
-	Long Comments;
 	@Data
-	@AllArgsConstructor
-	public static class Interact {
-		Boolean like;
-		Boolean collect;
-	}
-	@Data
-	public static class User {
+	public static class User{
 		Integer id;
 		String username;
 		String avatar;
-		String desc;
 		Integer gender;
 		String qq;
 		String wx;
